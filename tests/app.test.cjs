@@ -1,0 +1,24 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const path=require('node:path');
+test('tap reveals meaning, timer advances once, completion and reload persist',()=>{
+  const elements=new Map(), storage=new Map(), timers=new Map(); let seq=0;
+  const element=()=>({textContent:'',hidden:false,disabled:false,setAttribute(){},append(){},replaceChildren(){}});
+  const context={Date,document:{hidden:false,getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id);},createElement:element,addEventListener(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},setTimeout(fn){timers.set(++seq,fn);return seq;},clearTimeout(id){timers.delete(id);},setInterval(){}};
+  vm.createContext(context);
+  const run=file=>vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),context);
+  run('assets/core.js');
+  context.WORD_BATCHES=[{date:context.Vocab.date(),words:[{word:'adapt',meaning:'适应'},{word:'retain',meaning:'保留'}]}];
+  run('assets/app.js'); const el=id=>elements.get(id);
+  assert.equal(el('word').textContent,'adapt');
+  el('card').onclick(); el('card').onclick();
+  assert.equal(el('meaning').textContent,'适应');assert.equal(timers.size,1);
+  [...timers.values()][0](); assert.equal(el('word').textContent,'retain');assert.equal(timers.size,0);
+  el('card').onclick(); el('pause').onclick();assert.equal(timers.size,0);
+  el('next').onclick(); assert.equal(el('word').textContent,'本轮完成');assert.equal(el('restart').hidden,false);
+  run('assets/app.js');assert.equal(el('word').textContent,'本轮完成');
+  el('restart').onclick();assert.equal(el('word').textContent,'adapt');
+  el('card').onclick();el('all').onclick();assert.equal(timers.size,0);
+});
