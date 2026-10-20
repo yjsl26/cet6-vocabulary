@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
-test('tap reveals meaning, timer advances once, completion and reload persist',()=>{
+test('meaning stays visible until manual next; completion and reload persist',()=>{
   const elements=new Map(), storage=new Map(), timers=new Map(); let seq=0;
   const element=()=>({textContent:'',hidden:false,disabled:false,setAttribute(){},append(){},replaceChildren(){}});
   const context={Date,document:{hidden:false,getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id);},createElement:element,addEventListener(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},setTimeout(fn){timers.set(++seq,fn);return seq;},clearTimeout(id){timers.delete(id);},setInterval(){}};
@@ -14,9 +14,11 @@ test('tap reveals meaning, timer advances once, completion and reload persist',(
   run('assets/app.js'); const el=id=>elements.get(id);
   assert.equal(el('word').textContent,'adapt');
   el('card').onclick(); el('card').onclick();
-  assert.equal(el('meaning').textContent,'适应');assert.equal(timers.size,1);
-  [...timers.values()][0](); assert.equal(el('word').textContent,'retain');assert.equal(timers.size,0);
-  el('card').onclick(); el('pause').onclick();assert.equal(timers.size,0);
+  assert.equal(el('meaning').textContent,'适应');assert.equal(timers.size,0,'revealing must not schedule automatic advancement');
+  assert.equal(el('word').textContent,'adapt');
+  el('next').onclick(); assert.equal(el('word').textContent,'retain');
+  assert.equal(el('meaning').textContent,'');
+  el('card').onclick(); assert.equal(el('meaning').textContent,'保留'); assert.equal(timers.size,0);
   el('next').onclick(); assert.equal(el('word').textContent,'本轮完成');assert.equal(el('restart').hidden,false);
   run('assets/app.js');assert.equal(el('word').textContent,'本轮完成');
   el('restart').onclick();assert.equal(el('word').textContent,'adapt');
