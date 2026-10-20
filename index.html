@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173e36">
+  <title>每日六级 · 单词卡</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script defer src="data/words.js"></script>
+  <script defer src="assets/core.js"></script>
+  <script defer src="assets/app.js"></script>
+</head>
+<body>
+<main>
+  <header><span class="brand">CET·6 / 每日积累</span><span id="date"></span></header>
+  <h1>每天一点，<br>词汇多一点。</h1>
+  <p class="intro">点开释义，让每个单词留下印象。</p>
+  <nav aria-label="学习范围"><button id="today" aria-pressed="true">今日新增</button><button id="all" aria-pressed="false">历史词库</button></nav>
+  <p id="stats"></p>
+  <section aria-label="单词学习">
+    <p id="progress"></p>
+    <button id="card" aria-label="点击单词显示释义"><span id="word"></span><span id="meaning" aria-live="polite"></span><span id="hint">点击查看释义</span></button>
+    <div class="actions"><button id="pause" aria-pressed="false">暂停自动切换</button><button id="next">下一个 →</button></div>
+    <button id="restart" hidden>重新学习</button>
+  </section>
+  <p id="status" role="status"></p>
+  <details><summary>查看累计词库</summary><ul id="library"></ul></details>
+  <footer>当前为演示词库，尚未收录完整六级词表。<br>每日批次持续追加，历史单词保留。进度仅保存在当前浏览器。</footer>
+</main>
+</body>
+</html>
